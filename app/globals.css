@@ -1,0 +1,49 @@
+@import "tailwindcss";
+
+:root {
+  --background: #f7f8fb;
+  --foreground: #0f172a;
+  --card: #ffffff;
+  --muted: #e2e8f0;
+  --accent: #5aa2ff;
+  --accent-strong: #2f6fe5;
+  --shadow: 0 30px 80px rgba(15, 23, 42, 0.08);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-muted: var(--muted);
+  --color-accent: var(--accent);
+  --color-accent-strong: var(--accent-strong);
+  --font-sans: var(--font-nunito);
+  --font-display: var(--font-poppins);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  background: radial-gradient(
+      circle at 15% 20%,
+      rgba(90, 162, 255, 0.14),
+      transparent 45%
+    ),
+    radial-gradient(circle at 85% 10%, rgba(15, 23, 42, 0.08), transparent 35%),
+    var(--background);
+  color: var(--foreground);
+  font-family: var(--font-nunito), "Nunito", sans-serif;
+  min-height: 100vh;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+}

@@ -1,0 +1,165 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  STUDENT
+}
+
+enum ChecklistCategory {
+  PRE_ARRIVAL
+  ARRIVAL_DAY
+  FIRST_WEEK
+  WORK_READINESS
+}
+
+enum ChecklistStatus {
+  PENDING
+  COMPLETED
+}
+
+enum MessageChannel {
+  WHATSAPP
+}
+
+enum MessageStatus {
+  QUEUED
+  SENT
+  FAILED
+}
+
+model User {
+  id           String   @id @default(cuid())
+  role         Role
+  email        String?  @unique
+  phone        String?  @unique
+  passwordHash String?
+  codeHash     String?
+  createdAt    DateTime @default(now())
+
+  studentProfile StudentProfile?
+  auditLogs      AuditLog[]
+  messagesSent   MessageLog[] @relation("MessagesSent")
+  checklistUpdates ChecklistItem[] @relation("ChecklistUpdatedBy")
+}
+
+model StudentProfile {
+  id           String   @id @default(cuid())
+  userId       String   @unique
+  fullName     String
+  country      String
+  city         String
+  arrivalDate  DateTime
+  institution  String
+  portalCode   String   @unique
+  packageId    String
+  createdAt    DateTime @default(now())
+
+  user       User    @relation(fields: [userId], references: [id])
+  package    Package @relation(fields: [packageId], references: [id])
+  checklist  ChecklistItem[]
+  messages   MessageLog[]
+  parentLink ParentLink?
+}
+
+model Package {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  price       String
+  featuresJson Json
+  createdAt   DateTime @default(now())
+
+  students StudentProfile[]
+}
+
+model ChecklistItem {
+  id               String          @id @default(cuid())
+  studentId        String
+  category         ChecklistCategory
+  title            String
+  status           ChecklistStatus @default(PENDING)
+  notes            String?
+  completedAt      DateTime?
+  updatedByUserId  String?
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
+
+  student   StudentProfile @relation(fields: [studentId], references: [id])
+  updatedBy User?          @relation("ChecklistUpdatedBy", fields: [updatedByUserId], references: [id])
+}
+
+model MessageTemplate {
+  id            String   @id @default(cuid())
+  key           String   @unique
+  title         String
+  body          String
+  variablesJson Json
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  logs MessageLog[]
+}
+
+model MessageLog {
+  id                String         @id @default(cuid())
+  studentId         String
+  channel           MessageChannel
+  templateKey       String?
+  bodyRendered      String
+  status            MessageStatus
+  providerMessageId String?
+  sentByUserId      String?
+  createdAt         DateTime       @default(now())
+
+  student   StudentProfile @relation(fields: [studentId], references: [id])
+  template  MessageTemplate? @relation(fields: [templateKey], references: [key])
+  sentBy    User? @relation("MessagesSent", fields: [sentByUserId], references: [id])
+}
+
+model AuditLog {
+  id          String   @id @default(cuid())
+  actorUserId String?
+  action      String
+  entityType  String
+  entityId    String
+  metaJson    Json
+  createdAt   DateTime @default(now())
+
+  actor User? @relation(fields: [actorUserId], references: [id])
+}
+
+model ParentLink {
+  id         String   @id @default(cuid())
+  studentId  String   @unique
+  token      String   @unique
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+
+  student StudentProfile @relation(fields: [studentId], references: [id])
+}
+
+model ContactSubmission {
+  id        String   @id @default(cuid())
+  name      String
+  email     String
+  phone     String?
+  message   String
+  createdAt DateTime @default(now())
+}
+
+model BlogPost {
+  id        String   @id @default(cuid())
+  slug      String   @unique
+  title     String
+  excerpt   String
+  body      String
+  published Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
